@@ -1,0 +1,135 @@
+server:
+  image:
+    repository: temporalio/server
+    tag: 1.30.3
+
+  # Replicas and resources for the Temporal server
+  replicaCount: 1
+  setConfigFilePath: true
+  configMapsToMount: "sprig"
+  config:
+    namespaces:
+      create: true
+      namespace:
+        - name: approval-namespace
+          retention: 30d
+        - name: approval-namespace2
+          retention: 1h
+    persistence:
+      defaultStore: default
+      numHistoryShards: 512
+      default:
+        driver: "sql"
+        sql:
+          driver: postgres12
+          host: "192.168.49.1"
+          port: 54320
+          database: tmprldcd
+          user: "cnxtmpld"
+          connectAttributes:
+            search_path: "tmpld"
+          existingSecret: aws-secret-rds-temporal
+          secretKey: password
+          maxConns: 5
+          maxIdleConns: 2
+          maxConnLifetime: "1h"
+      visibility:
+        driver: "sql"
+        sql:
+          driver: postgres12
+          host: "192.168.49.1"
+          port: 54320
+          database: tmplvdcd
+          user: "cnxtmpld"
+          connectAttributes:
+            search_path: "tmplv"
+          existingSecret: aws-secret-rds-temporal
+          secretKey: password
+          maxConns: 5
+          maxIdleConns: 2
+          maxConnLifetime: "1h"
+  additionalEnvSecretName: "aws-secret-rds-temporal"
+  additionalEnv:
+    - name: SQL_HOST
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret-rds-temporal
+          key: host
+    - name: SQL_PORT
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret-rds-temporal
+          key: port
+    - name: SQL_USER
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret-rds-temporal
+          key: username
+    - name: SQL_DATABASE
+      valueFrom:
+        secretKeyRef:
+          name: aws-secret-rds-temporal
+          key: dbname
+  frontend:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2
+        memory: 2Gi
+  history:
+    # Replicas and resources for the history service
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2
+        memory: 1G
+  matching:
+    # Replicas and resources for the matching service
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2
+        memory: 2Gi
+  worker:
+    # Replicas and resources for the worker service
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2
+        memory: 2Gi
+## Version temporal
+admintools:
+  image:
+    repository: temporalio/admin-tools
+    tag: 1.30.3
+web:
+  enabled: true
+  image:
+    repository: temporalio/ui
+    tag: 2.48.1
+  replicaCount: 1
+schema:
+  createDatabase:
+    enabled: false
+  manageSchema: false
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+prometheus:
+  enabled: false
+grafana:
+  enabled: false
+elasticsearch:
+  enabled: false
+cassandra:
+  enabled: false
