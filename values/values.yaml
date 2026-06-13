@@ -137,7 +137,7 @@ web:
 # Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
   useHelmHooks: true
-  ttlSecondsAfterFinished: 3600
+  ttlSecondsAfterFinished: 300
 #   jobAnnotations:
 #     argocd.argoproj.io/hook: PreSync
 #     argocd.argoproj.io/sync-wave: "0"
