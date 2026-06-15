@@ -11,13 +11,13 @@ server:
       state: "enabled"
       enableRead: true
       provider:
-        s3:
+        s3Store:
           region: "us-east-1"
     visibility:
       state: "enabled"
       enableRead: true
       provider:
-        s3:
+        s3Store:
           region: "us-east-1"
     namespaceDefaults:
       archival:
