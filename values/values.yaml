@@ -1,15 +1,13 @@
-# Database configuration for Temporal using PostgreSQL as the persistence and visibility store.
 server:
   image:
     repository: temporalio/server
-    tag: 1.31.0
+    tag: 1.30.3
+
   # Replicas and resources for the Temporal server
   replicaCount: 1
+  setConfigFilePath: true
+  configMapsToMount: "sprig"
   config:
-    metrics:
-      prometheus:
-        timerType: histogram
-        listenAddress: "0.0.0.0:9090"
     namespaces:
       create: true
       namespace:
@@ -19,41 +17,37 @@ server:
           retention: 1h
     persistence:
       defaultStore: default
-      visibilityStore: visibility
       numHistoryShards: 512
-      datastores:
-        default:
-          sql:
-            createDatabase: false
-            manageSchema: true
-            pluginName: postgres12_pgx
-            databaseName: tmprldcd
-            connectAddr: "192.168.49.1:54320"
-            connectProtocol: "tcp"
-            user: "cnxtmpld"
-            connectAttributes:
-              search_path: "tmpld"
-            existingSecret: aws-secret-rds-temporal
-            secretKey: password
-            maxConns: 5
-            maxIdleConns: 2
-            maxConnLifetime: "1h"
-        visibility:
-          sql:
-            createDatabase: false
-            manageSchema: true
-            pluginName: postgres12_pgx
-            databaseName: tmplvdcd
-            connectAddr: "192.168.49.1:54320"
-            connectProtocol: "tcp"
-            user: "cnxtmpld"
-            connectAttributes:
-              search_path: "tmplv"
-            existingSecret: aws-secret-rds-temporal
-            secretKey: password
-            maxConns: 5
-            maxIdleConns: 2
-            maxConnLifetime: "1h"
+      default:
+        driver: "sql"
+        sql:
+          driver: postgres12
+          host: "192.168.49.1"
+          port: 54320
+          database: tmprldcd
+          user: "cnxtmpld"
+          connectAttributes:
+            search_path: "tmpld"
+          existingSecret: aws-secret-rds-temporal
+          secretKey: password
+          maxConns: 5
+          maxIdleConns: 2
+          maxConnLifetime: "1h"
+      visibility:
+        driver: "sql"
+        sql:
+          driver: postgres12
+          host: "192.168.49.1"
+          port: 54320
+          database: tmplvdcd
+          user: "cnxtmpld"
+          connectAttributes:
+            search_path: "tmplv"
+          existingSecret: aws-secret-rds-temporal
+          secretKey: password
+          maxConns: 5
+          maxIdleConns: 2
+          maxConnLifetime: "1h"
   additionalEnvSecretName: "aws-secret-rds-temporal"
   additionalEnv:
     - name: SQL_HOST
@@ -84,7 +78,6 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
-
   history:
     # Replicas and resources for the history service
     replicaCount: 1
@@ -105,7 +98,6 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
-
   worker:
     # Replicas and resources for the worker service
     replicaCount: 1
@@ -116,29 +108,28 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
-
 ## Version temporal
 admintools:
   image:
     repository: temporalio/admin-tools
-    tag: 1.31.0
-
-shims:
-  dockerize: false
-  elasticsearchTool: false
-
+    tag: 1.30.3
 web:
   enabled: true
   image:
     repository: temporalio/ui
-    tag: 2.49.1
+    tag: 2.48.1
   replicaCount: 1
-
-# Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
-  useHelmHooks: true
-  ttlSecondsAfterFinished: 300
-#   jobAnnotations:
-#     argocd.argoproj.io/hook: PreSync
-#     argocd.argoproj.io/sync-wave: "0"
-#     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+  createDatabase:
+    enabled: false
+  manageSchema: true
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+prometheus:
+  enabled: true
+grafana:
+  enabled: true
+elasticsearch:
+  enabled: false
+cassandra:
+  enabled: false
