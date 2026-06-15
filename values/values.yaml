@@ -8,14 +8,16 @@ server:
       state: "enabled"
       enableRead: true
       provider:
-        s3:
+        s3store:
           region: "us-east-1"
+          logLevel: 0
     visibility:
       state: "enabled"
       enableRead: true
       provider:
-        s3:
+        s3store:
           region: "us-east-1"
+          logLevel: 0
     namespaceDefaults:
       archival:
         history:
