@@ -13,7 +13,7 @@ server:
       provider:
         s3store:
           region: "us-east-1"
-          # endpoint: "http://localstack.localstack.svc.cluster.local:4566"
+          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
           # s3ForcePathStyle: true
     visibility:
       state: "enabled"
@@ -21,7 +21,7 @@ server:
       provider:
         s3store:
           region: "us-east-1"
-          # endpoint: "http://localstack.localstack.svc.cluster.local:4566"
+          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
           # s3ForcePathStyle: true
 
   namespaceDefaults:
@@ -92,12 +92,12 @@ server:
       value: "test"
     - name: AWS_REGION
       value: "us-east-1"
-    - name: AWS_ENDPOINT_URL
-      value: "http://localstack.localstack.svc.cluster.local:4566"
-    - name: AWS_ENDPOINT_URL_S3
-      value: "http://localstack.localstack.svc.cluster.local:4566"
-    - name: AWS_S3_FORCE_PATH_STYLE
-      value: "true"
+    # - name: AWS_ENDPOINT_URL
+    #   value: "http://localstack.localstack.svc.cluster.local:4566"
+    # - name: AWS_ENDPOINT_URL_S3
+    #   value: "http://localstack.localstack.svc.cluster.local:4566"
+    # - name: AWS_S3_FORCE_PATH_STYLE
+    #   value: "true"
     - name: SQL_HOST
       valueFrom:
         secretKeyRef:
