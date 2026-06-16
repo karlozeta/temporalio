@@ -88,6 +88,10 @@ server:
       value: "us-east-1"
     - name: AWS_ENDPOINT_URL
       value: "http://localstack.localstack.svc.cluster.local:4566"
+    - name: AWS_ENDPOINT_URL_S3
+      value: "http://localstack.localstack.svc.cluster.local:4566"
+    - name: AWS_S3_FORCE_PATH_STYLE
+      value: "true"
     - name: SQL_HOST
       valueFrom:
         secretKeyRef:
@@ -125,6 +129,10 @@ server:
         value: "us-east-1"
       - name: AWS_ENDPOINT_URL
         value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_ENDPOINT_URL_S3
+        value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_S3_FORCE_PATH_STYLE
+        value: "true"
 
   history:
     # Replicas and resources for the history service
@@ -145,6 +153,10 @@ server:
         value: "us-east-1"
       - name: AWS_ENDPOINT_URL
         value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_ENDPOINT_URL_S3
+        value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_S3_FORCE_PATH_STYLE
+        value: "true"
     
   matching:
     # Replicas and resources for the matching service
@@ -165,6 +177,10 @@ server:
         value: "us-east-1"
       - name: AWS_ENDPOINT_URL
         value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_ENDPOINT_URL_S3
+        value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_S3_FORCE_PATH_STYLE
+        value: "true"
     
 
   worker:
@@ -186,6 +202,10 @@ server:
         value: "us-east-1"
       - name: AWS_ENDPOINT_URL
         value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_ENDPOINT_URL_S3
+        value: "http://localstack.localstack.svc.cluster.local:4566"
+      - name: AWS_S3_FORCE_PATH_STYLE
+        value: "true"
 
 ## Version temporal
 admintools:
