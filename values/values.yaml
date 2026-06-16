@@ -13,12 +13,16 @@ server:
       provider:
         s3store:
           region: "us-east-1"
+          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
+          s3ForcePathStyle: true
     visibility:
       state: "enabled"
       enableRead: true
       provider:
         s3store:
           region: "us-east-1"
+          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
+          s3ForcePathStyle: true
 
   namespaceDefaults:
     archival:
@@ -40,6 +44,8 @@ server:
         - name: approval-namespace
           retention: 30d
         - name: approval-namespace2
+          retention: 1h
+        - name: default
           retention: 1h
     persistence:
       defaultStore: default
