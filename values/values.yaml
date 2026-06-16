@@ -116,6 +116,15 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
+    additionalEnv:
+      - name: AWS_ACCESS_KEY_ID
+        value: "test"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "test"
+      - name: AWS_REGION
+        value: "us-east-1"
+      - name: AWS_ENDPOINT_URL
+        value: "http://localstack.localstack.svc.cluster.local:4566"
 
   history:
     # Replicas and resources for the history service
@@ -128,12 +137,14 @@ server:
         cpu: 2
         memory: 1G
     additionalEnv:
-    - name: AWS_ACCESS_KEY_ID
-      value: "test"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "test"
-    - name: AWS_REGION
-      value: "us-east-1"
+      - name: AWS_ACCESS_KEY_ID
+        value: "test"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "test"
+      - name: AWS_REGION
+        value: "us-east-1"
+      - name: AWS_ENDPOINT_URL
+        value: "http://localstack.localstack.svc.cluster.local:4566"
     
   matching:
     # Replicas and resources for the matching service
@@ -145,6 +156,16 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
+    additionalEnv:
+      - name: AWS_ACCESS_KEY_ID
+        value: "test"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "test"
+      - name: AWS_REGION
+        value: "us-east-1"
+      - name: AWS_ENDPOINT_URL
+        value: "http://localstack.localstack.svc.cluster.local:4566"
+    
 
   worker:
     # Replicas and resources for the worker service
@@ -156,12 +177,30 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
+    additionalEnv:
+      - name: AWS_ACCESS_KEY_ID
+        value: "test"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "test"
+      - name: AWS_REGION
+        value: "us-east-1"
+      - name: AWS_ENDPOINT_URL
+        value: "http://localstack.localstack.svc.cluster.local:4566"
 
 ## Version temporal
 admintools:
   image:
     repository: temporalio/admin-tools
     tag: 1.30.3
+  additionalEnv:
+    - name: AWS_ACCESS_KEY_ID
+      value: "test"
+    - name: AWS_SECRET_ACCESS_KEY
+      value: "test"
+    - name: AWS_REGION
+      value: "us-east-1"
+    - name: AWS_ENDPOINT_URL
+      value: "http://localstack.localstack.svc.cluster.local:4566"
 
 shims:
   dockerize: false
@@ -173,6 +212,15 @@ web:
     repository: temporalio/ui
     tag: 2.49.1
   replicaCount: 1
+  additionalEnv:
+    - name: AWS_ACCESS_KEY_ID
+      value: "test"
+    - name: AWS_SECRET_ACCESS_KEY
+      value: "test"
+    - name: AWS_REGION
+      value: "us-east-1"
+    - name: AWS_ENDPOINT_URL
+      value: "http://localstack.localstack.svc.cluster.local:4566"
 
 # Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
