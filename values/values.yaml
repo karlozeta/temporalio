@@ -14,7 +14,7 @@ server:
         s3store:
           region: "us-east-1"
           endpoint: "http://localstack.localstack.svc.cluster.local:4566"
-          # s3ForcePathStyle: true
+          s3ForcePathStyle: true
     visibility:
       state: "enabled"
       enableRead: true
@@ -22,7 +22,7 @@ server:
         s3store:
           region: "us-east-1"
           endpoint: "http://localstack.localstack.svc.cluster.local:4566"
-          # s3ForcePathStyle: true
+          s3ForcePathStyle: true
 
   namespaceDefaults:
     archival:
