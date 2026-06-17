@@ -124,6 +124,10 @@ server:
           key: dbname
     - name: TEMPORAL_JWT_PERMISSIONS_CLAIM
       value: "roles"
+    - name: TEMPORAL_AUTH_AUTHORIZER
+      value: "default"
+    - name: TEMPORAL_AUTH_CLAIM_MAPPER
+      value: "default"
   frontend:
     resources:
       requests:
