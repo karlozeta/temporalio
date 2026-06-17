@@ -1,4 +1,14 @@
 # Database configuration for Temporal using PostgreSQL as the persistence and visibility store.
+# For AWS EKS production: Configure IRSA role with S3 permissions, remove endpoint/credentials
+# For LocalStack development: Keep endpoint in s3store, use test credentials
+
+# serviceAccount:
+#   create: true
+#   name: temporal-sa
+  # For EKS with IRSA, add annotation pointing to the IAM role ARN:
+  # extraAnnotations:
+  #   eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/temporal-irsa-s3-role"
+
 server:
   image:
     repository: temporalio/server
@@ -92,12 +102,6 @@ server:
       value: "test"
     - name: AWS_REGION
       value: "us-east-1"
-    # - name: AWS_ENDPOINT_URL
-    #   value: "http://localstack.localstack.svc.cluster.local:4566"
-    # - name: AWS_ENDPOINT_URL_S3
-    #   value: "http://localstack.localstack.svc.cluster.local:4566"
-    # - name: AWS_S3_FORCE_PATH_STYLE
-    #   value: "true"
     - name: SQL_HOST
       valueFrom:
         secretKeyRef:
@@ -126,19 +130,6 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
-    # additionalEnv:
-    #   - name: AWS_ACCESS_KEY_ID
-    #     value: "test"
-    #   - name: AWS_SECRET_ACCESS_KEY
-    #     value: "test"
-    #   - name: AWS_REGION
-    #     value: "us-east-1"
-    #   - name: AWS_ENDPOINT_URL
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_ENDPOINT_URL_S3
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_S3_FORCE_PATH_STYLE
-    #     value: "true"
 
   history:
     # Replicas and resources for the history service
@@ -150,19 +141,6 @@ server:
       limits:
         cpu: 2
         memory: 1G
-    # additionalEnv:
-    #   - name: AWS_ACCESS_KEY_ID
-    #     value: "test"
-    #   - name: AWS_SECRET_ACCESS_KEY
-    #     value: "test"
-    #   - name: AWS_REGION
-    #     value: "us-east-1"
-    #   - name: AWS_ENDPOINT_URL
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_ENDPOINT_URL_S3
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_S3_FORCE_PATH_STYLE
-    #     value: "true"
     
   matching:
     # Replicas and resources for the matching service
@@ -173,21 +151,7 @@ server:
         memory: 512Mi
       limits:
         cpu: 2
-        memory: 2Gi
-    # additionalEnv:
-    #   - name: AWS_ACCESS_KEY_ID
-    #     value: "test"
-    #   - name: AWS_SECRET_ACCESS_KEY
-    #     value: "test"
-    #   - name: AWS_REGION
-    #     value: "us-east-1"
-    #   - name: AWS_ENDPOINT_URL
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_ENDPOINT_URL_S3
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_S3_FORCE_PATH_STYLE
-    #     value: "true"
-    
+        memory: 2Gi    
 
   worker:
     # Replicas and resources for the worker service
@@ -199,34 +163,12 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
-    # additionalEnv:
-    #   - name: AWS_ACCESS_KEY_ID
-    #     value: "test"
-    #   - name: AWS_SECRET_ACCESS_KEY
-    #     value: "test"
-    #   - name: AWS_REGION
-    #     value: "us-east-1"
-    #   - name: AWS_ENDPOINT_URL
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_ENDPOINT_URL_S3
-    #     value: "http://localstack.localstack.svc.cluster.local:4566"
-    #   - name: AWS_S3_FORCE_PATH_STYLE
-    #     value: "true"
 
 ## Version temporal
 admintools:
   image:
     repository: temporalio/admin-tools
     tag: 1.30.3
-  # additionalEnv:
-  #   - name: AWS_ACCESS_KEY_ID
-  #     value: "test"
-  #   - name: AWS_SECRET_ACCESS_KEY
-  #     value: "test"
-  #   - name: AWS_REGION
-  #     value: "us-east-1"
-  #   - name: AWS_ENDPOINT_URL
-  #     value: "http://localstack.localstack.svc.cluster.local:4566"
 
 shims:
   dockerize: false
@@ -238,21 +180,17 @@ web:
     repository: temporalio/ui
     tag: 2.49.1
   replicaCount: 1
-  # additionalEnv:
-  #   - name: AWS_ACCESS_KEY_ID
-  #     value: "test"
-  #   - name: AWS_SECRET_ACCESS_KEY
-  #     value: "test"
-  #   - name: AWS_REGION
-  #     value: "us-east-1"
-  #   - name: AWS_ENDPOINT_URL
-  #     value: "http://localstack.localstack.svc.cluster.local:4566"
+  additionalEnv:
+    - name: TEMPORAL_AUTH_ENABLED
+      value: "true"
+    - name: TEMPORAL_AUTH_PROVIDER_URL
+      value: "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/v2.0"
+    - name: TEMPORAL_AUTH_CLIENT_ID
+      value: "79a79300-4903-44a0-9155-da5dab4d1f85"
+    - name: TEMPORAL_AUTH_CALLBACK_URL
+      value: "http://localhost:8080/auth/sso/callback"
 
 # Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
   useHelmHooks: true
   ttlSecondsAfterFinished: 300
-#   jobAnnotations:
-#     argocd.argoproj.io/hook: PreSync
-#     argocd.argoproj.io/sync-wave: "0"
-#     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
