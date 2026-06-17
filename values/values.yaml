@@ -189,6 +189,10 @@ web:
       value: "79a79300-4903-44a0-9155-da5dab4d1f85"
     - name: TEMPORAL_AUTH_CALLBACK_URL
       value: "http://localhost:8080/auth/sso/callback"
+    - name: TEMPORAL_AUTH_SCOPES
+      value: "openid,api://79a79300-4903-44a0-9155-da5dab4d1f85/default"
+    - name: TEMPORAL_JWT_PERMISSIONS_CLAIM
+      value: "roles"
 
 # Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
