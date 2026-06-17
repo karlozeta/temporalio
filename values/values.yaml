@@ -193,6 +193,8 @@ web:
       value: "openid,api://79a79300-4903-44a0-9155-da5dab4d1f85/default"
     - name: TEMPORAL_JWT_PERMISSIONS_CLAIM
       value: "roles"
+    - name: TEMPORAL_AUTH_CLIENT_SECRET
+      value: "M2M8Q~iTMgCTBBT9DV02KnY~ZUIiGQ1yi1TzCaeN"
 
 # Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
