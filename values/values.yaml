@@ -193,6 +193,8 @@ web:
   additionalEnv:
     - name: TEMPORAL_AUTH_ENABLED
       value: "true"
+    - name: TEMPORAL_AUTH_ISSUER_URL
+      value: "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/v2.0"
     - name: TEMPORAL_AUTH_PROVIDER_URL
       value: "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/v2.0"
     - name: TEMPORAL_AUTH_CLIENT_ID
@@ -202,9 +204,7 @@ web:
     - name: TEMPORAL_AUTH_CALLBACK_URL
       value: "http://localhost:8080/auth/sso/callback"
     - name: TEMPORAL_AUTH_SCOPES
-      value: "openid,profile,email,offline_access,api://79a79300-4903-44a0-9155-da5dab4d1f85/.default"
-    - name: TEMPORAL_AUTH_PASS_ACCESS_TOKEN
-      value: "true"
+      value: "openid,profile,email,offline_access,api://79a79300-4903-44a0-9155-da5dab4d1f85/default"
 
 # Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
