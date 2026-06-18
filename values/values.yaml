@@ -16,19 +16,18 @@ server:
   # Replicas and resources for the Temporal server
   replicaCount: 1
 
-  internalFrontend:
-    enabled: true
-    replicaCount: 1
+  internal-frontend:
+    # Enable this to create internal-frontend
+    enabled: false
     service:
+      # Evaluated as template
       type: ClusterIP
-      port: 7234
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
+      port: 7236
+      appProtocol: tcp
+      membershipPort: 6936
+      membershipAppProtocol: tcp
+      httpPort: 7246
+      httpAppProtocol: http
 
   archival:
     history:
