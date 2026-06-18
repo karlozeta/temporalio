@@ -203,6 +203,11 @@ shims:
 
 web:
   enabled: true
+  ingress:
+    enabled: false
+    hosts:
+      - "/"
+    tls: []
   image:
     repository: temporalio/ui
     tag: 2.49.1
