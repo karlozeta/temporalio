@@ -225,7 +225,7 @@ web:
 schema:
   useHelmHooks: true
   ttlSecondsAfterFinished: 300
-  # jobAnnotations:
-  #   argocd.argoproj.io/hook: PreSync
-  #   argocd.argoproj.io/sync-wave: "0"
-  #   argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+  jobAnnotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
