@@ -70,14 +70,14 @@ server:
           retention: 1h
         - name: default
           retention: 1h
-    # authorization:
-    #   jwtKeyProvider:
-    #     keySourceURIs:
-    #       - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
-    #     refreshInterval: "30m"
-    #   permissionsClaimName: "roles"
-    #   authorizer: "default"
-    #   claimMapper: "default"
+    authorization:
+      jwtKeyProvider:
+        keySourceURIs:
+          - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
+        refreshInterval: "30m"
+      permissionsClaimName: "roles"
+      authorizer: "default"
+      claimMapper: "default"
     persistence:
       defaultStore: default
       visibilityStore: visibility
@@ -143,6 +143,8 @@ server:
         secretKeyRef:
           name: aws-secret-rds-temporal
           key: dbname
+    - name: TEMPORAL_GRPC_META_AUTHORIZATION
+      value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiJhcGk6Ly83OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC80ZTUwNDUyNS00MDkxLTQ5NWEtOGRlMC0zZWUxODE4N2FiYWMvIiwiaWF0IjoxNzgxNzkzMzAzLCJuYmYiOjE3ODE3OTMzMDMsImV4cCI6MTc4MTc5ODQzNCwiYWNyIjoiMSIsImFpbyI6IkFlUUFHLzhjQUFBQVRHSTd0bVdjK0dTWFordlA2UkRXMTV0dHYvVGVBbk85YU9nR2NNT3VSOGlRSjRWaG1QdFBhc1BGWlp6VzFHR20wWXIzazUwU3ZTYU9BdEY3VitNdkJHVWxOYlNCcXNES3BTM1ZuZnZrejVvMHZ3WnYySDNUVTM5N3NML2VaYklLeGJPMmhtaFJzbXRIVmJaZThKQUtpRWFlbW52NDFrM3VvTWpFRmEzY1lNZlEzU3lTUnFNUEZzSHFmMDBPMUtzYUZYcXVhMm5NamRzdmtHVTg0dFRCaUZUT1dCTjFLcjdoU1dqdU12eXlOSElxeVYyYUwxaGFnMU0vZHBkdnJLeXR6SnpQT1hFWTVQQlpYbllkVy9vYlVjOGNqUUkvN2ZZQzBhQW5rRFZGVUtFPSIsImFtciI6WyJwd2QiLCJtZmEiXSwiYXBwaWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJhcHBpZGFjciI6IjEiLCJlbWFpbCI6ImthcmxvemV0YUBob3RtYWlsLmNvbSIsImZhbWlseV9uYW1lIjoiemFwYXRhIGdvbWV6IiwiZ2l2ZW5fbmFtZSI6ImNhcmxvcyBmZXJuYW5kbyIsImlkcCI6ImxpdmUuY29tIiwiaXBhZGRyIjoiMTkxLjk0LjEwLjE2OSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtNTZlYi0wZWZmLWI1ZTYtOGRkYTA4NTFjZGQzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInVuaXF1ZV9uYW1lIjoibGl2ZS5jb20ja2FybG96ZXRhQGhvdG1haWwuY29tIiwidXRpIjoiS3k1MHhxQlktMHFqc1BRQUdUOGlBQSIsInZlciI6IjEuMCIsInhtc19mdGQiOiI0b2oxU2RadXFwNWs4RE91Z0pCblFIcmJOU1d4T0JvQWx3OFRES05tVFA0QmRYTnpiM1YwYUMxa2MyMXoifQ.dhQuwgmgVrz6grHM8nc_PJUWSt41L2lxyv3C1h5edMmS5C4IA1U_1LZ3N8iSgpGQ9GJoDdCmfSQ33I3fsju-M2y5YDPB_v5-rriBlEZCDd8CsaQsuD1PETXjjwxrmkTj_KROnllpGCvwu5N4cfNaLND3DWcArg4NpmAZyl5T54vWyQRRa-WYEjadgL-lZ3Afs8E3jT0HfzIULDqZGIsDht57__e7GQ9m8YrFkKudvHYIs_XzVGIKpMCgY9e-8FesbOoQ696kO-zv_wWNPykgUv6M1vh1QPtcIfz6WKSzbC3xyhj2zaYbVWLcTLEmVBeeisv337M9_xNWBFOSIw7tpg"
     # - name: INTERNAL_FRONTEND_GRPC_PORT
     #   value: "7236"
     # - name: INTERNAL_FRONTEND_MEMBERSHIP_PORT
