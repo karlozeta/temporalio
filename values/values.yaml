@@ -217,7 +217,7 @@ web:
     - name: TEMPORAL_AUTH_CLIENT_ID
       value: "79a79300-4903-44a0-9155-da5dab4d1f85"
     - name: TEMPORAL_AUTH_CLIENT_SECRET
-      value: "M2M8Q~iTMgCTBBT9DV02KnY~ZUIiGQ1yi1TzCaeN"
+      value: "Cmu8Q~9aOHqB55OJNNq6wOLHKkAAPZaACuoDPc6S"
     - name: TEMPORAL_AUTH_CALLBACK_URL
       value: "http://localhost:8080/auth/sso/callback"
     - name: TEMPORAL_AUTH_SCOPES
