@@ -57,6 +57,14 @@ server:
           retention: 1h
         - name: default
           retention: 1h
+    authorization:
+      jwtKeyProvider:
+        keySourceURIs:
+          - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
+        refreshInterval: "30m"
+      permissionsClaimName: "roles"
+      authorizer: "default"
+      claimMapper: "default"
     persistence:
       defaultStore: default
       visibilityStore: visibility
@@ -122,16 +130,6 @@ server:
         secretKeyRef:
           name: aws-secret-rds-temporal
           key: dbname
-    - name: TEMPORAL_JWT_PERMISSIONS_CLAIM
-      value: "roles"
-    - name: TEMPORAL_AUTH_AUTHORIZER
-      value: "default"
-    - name: TEMPORAL_AUTH_CLAIM_MAPPER
-      value: "default"
-    - name: TEMPORAL_JWT_KEY_SOURCE1
-      value: "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
-    - name: TEMPORAL_JWT_KEY_REFRESH
-      value: "30m"
   frontend:
     resources:
       requests:
