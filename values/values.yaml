@@ -191,6 +191,10 @@ web:
     tag: 2.49.1
   replicaCount: 1
   additionalEnv:
+    - name: TEMPORAL_CLOUD_UI
+      value: "true"
+    - name: TEMPORAL_NOTIFY_ON_NEW_VERSION
+      value: "true"
     - name: TEMPORAL_AUTH_ENABLED
       value: "true"
     - name: TEMPORAL_AUTH_ISSUER_URL
