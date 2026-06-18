@@ -12,7 +12,7 @@
 server:
   image:
     repository: temporalio/server
-    tag: 1.31.0
+    tag: 1.30.3
   # Replicas and resources for the Temporal server
   replicaCount: 1
 
@@ -143,10 +143,10 @@ server:
         secretKeyRef:
           name: aws-secret-rds-temporal
           key: dbname
-    - name: INTERNAL_FRONTEND_GRPC_PORT
-      value: "7236"
-    - name: INTERNAL_FRONTEND_MEMBERSHIP_PORT
-      value: "6936"
+    # - name: INTERNAL_FRONTEND_GRPC_PORT
+    #   value: "7236"
+    # - name: INTERNAL_FRONTEND_MEMBERSHIP_PORT
+    #   value: "6936"
   frontend:
     resources:
       requests:
@@ -193,7 +193,7 @@ server:
 admintools:
   image:
     repository: temporalio/admin-tools
-    tag: 1.31.0
+    tag: 1.30.3
 
 shims:
   dockerize: false
