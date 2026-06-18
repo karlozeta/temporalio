@@ -16,18 +16,18 @@ server:
   # Replicas and resources for the Temporal server
   replicaCount: 1
 
-  internal-frontend:
-    # Enable this to create internal-frontend
-    enabled: false
-    service:
-      # Evaluated as template
-      type: ClusterIP
-      port: 7236
-      appProtocol: tcp
-      membershipPort: 6936
-      membershipAppProtocol: tcp
-      httpPort: 7246
-      httpAppProtocol: http
+  # internal-frontend:
+  #   # Enable this to create internal-frontend
+  #   enabled: false
+  #   service:
+  #     # Evaluated as template
+  #     type: ClusterIP
+  #     port: 7236
+  #     appProtocol: tcp
+  #     membershipPort: 6936
+  #     membershipAppProtocol: tcp
+  #     httpPort: 7246
+  #     httpAppProtocol: http
 
   archival:
     history:
@@ -227,3 +227,7 @@ web:
 schema:
   useHelmHooks: true
   ttlSecondsAfterFinished: 300
+  jobAnnotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
