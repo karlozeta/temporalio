@@ -16,6 +16,20 @@ server:
   # Replicas and resources for the Temporal server
   replicaCount: 1
 
+  internalFrontend:
+    enabled: true
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 7234
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
   archival:
     history:
       state: "enabled"
@@ -57,6 +71,11 @@ server:
           retention: 1h
         - name: default
           retention: 1h
+    # ⚠️ SOLUCIÓN 1: RECOMENDADA - Usar dos puertos:
+    # - Puerto 7233 (frontend): Con autorización habilitada (para usuarios)
+    # - Puerto 7233 (interno): Sin autorización (para Jobs/admin-tools)
+    # El Helm chart permite esto con la siguiente configuración.
+    # Para que funcione, el Job de namespace debe conectarse a través de internal-frontend
     authorization:
       jwtKeyProvider:
         keySourceURIs:
@@ -131,6 +150,8 @@ server:
           name: aws-secret-rds-temporal
           key: dbname
   frontend:
+    # CRÍTICO: Frontend PRINCIPAL requiere autorización para usuarios
+    replicaCount: 1
     resources:
       requests:
         cpu: 500m
@@ -208,7 +229,7 @@ web:
     - name: TEMPORAL_AUTH_TYPE
       value: "oidc"
 
-# Congiguracion para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
+# Configuración para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
   useHelmHooks: true
   ttlSecondsAfterFinished: 300
