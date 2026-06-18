@@ -143,6 +143,10 @@ server:
         secretKeyRef:
           name: aws-secret-rds-temporal
           key: dbname
+    - name: INTERNAL_FRONTEND_GRPC_PORT
+      value: "7236"
+    - name: INTERNAL_FRONTEND_MEMBERSHIP_PORT
+      value: "6936"
   frontend:
     resources:
       requests:
@@ -226,6 +230,10 @@ schema:
   useHelmHooks: true
   ttlSecondsAfterFinished: 300
   jobAnnotations:
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/sync-wave: "0"
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation
+  # jobAnnotations:
+  #   argocd.argoproj.io/hook: PreSync
+  #   argocd.argoproj.io/sync-wave: "0"
+  #   argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
