@@ -78,8 +78,6 @@ server:
       permissionsClaimName: "roles"
       authorizer: "default"
       claimMapper: "default"
-      audiences:
-          - "api://79a79300-4903-44a0-9155-da5dab4d1f85"
 
     persistence:
       defaultStore: default
@@ -226,7 +224,7 @@ web:
     - name: TEMPORAL_AUTH_CALLBACK_URL
       value: "http://localhost:8080/auth/sso/callback"
     - name: TEMPORAL_AUTH_SCOPES
-      value: "openid,profile,email,offline_access,api://79a79300-4903-44a0-9155-da5dab4d1f85/.default"
+      value: "openid,profile,email,offline_access,api://79a79300-4903-44a0-9155-da5dab4d1f85/default"
     - name: TEMPORAL_AUTH_TYPE
       value: "oidc"
 
