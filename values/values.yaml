@@ -70,14 +70,17 @@ server:
           retention: 1h
         - name: default
           retention: 1h
-    # authorization:
-    #   jwtKeyProvider:
-    #     keySourceURIs:
-    #       - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
-    #     refreshInterval: "30m"
-    #   permissionsClaimName: "roles"
-    #   authorizer: "default"
-    #   claimMapper: "default"
+    authorization:
+      jwtKeyProvider:
+        keySourceURIs:
+          - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
+        refreshInterval: "30m"
+      permissionsClaimName: "roles"
+      authorizer: "default"
+      claimMapper: "default"
+      audiences:
+          - "api://79a79300-4903-44a0-9155-da5dab4d1f85"
+
     persistence:
       defaultStore: default
       visibilityStore: visibility
@@ -203,11 +206,6 @@ shims:
 
 web:
   enabled: true
-  ingress:
-    enabled: false
-    hosts:
-      - "/"
-    tls: []
   image:
     repository: temporalio/ui
     tag: 2.49.1
@@ -228,7 +226,7 @@ web:
     - name: TEMPORAL_AUTH_CALLBACK_URL
       value: "http://localhost:8080/auth/sso/callback"
     - name: TEMPORAL_AUTH_SCOPES
-      value: "openid,profile,email,offline_access,api://79a79300-4903-44a0-9155-da5dab4d1f85/default"
+      value: "openid,profile,email,offline_access,api://79a79300-4903-44a0-9155-da5dab4d1f85/.default"
     - name: TEMPORAL_AUTH_TYPE
       value: "oidc"
 
