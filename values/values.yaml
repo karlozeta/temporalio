@@ -18,7 +18,7 @@ server:
 
   internal-frontend:
     # Enable this to create internal-frontend
-    enabled: false
+    enabled: true
     service:
       # Evaluated as template
       type: ClusterIP
@@ -70,14 +70,14 @@ server:
           retention: 1h
         - name: default
           retention: 1h
-    authorization:
-      jwtKeyProvider:
-        keySourceURIs:
-          - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
-        refreshInterval: "30m"
-      permissionsClaimName: "roles"
-      authorizer: "default"
-      claimMapper: "default"
+    # authorization:
+    #   jwtKeyProvider:
+    #     keySourceURIs:
+    #       - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
+    #     refreshInterval: "30m"
+    #   permissionsClaimName: "roles"
+    #   authorizer: "default"
+    #   claimMapper: "default"
     persistence:
       defaultStore: default
       visibilityStore: visibility
@@ -226,10 +226,6 @@ schema:
   useHelmHooks: true
   ttlSecondsAfterFinished: 300
   jobAnnotations:
-    helm.sh/hook: pre-install,pre-upgrade
-    helm.sh/hook-weight: "0"
-    helm.sh/hook-delete-policy: before-hook-creation
-  # jobAnnotations:
-  #   argocd.argoproj.io/hook: PreSync
-  #   argocd.argoproj.io/sync-wave: "0"
-  #   argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
