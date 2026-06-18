@@ -12,22 +12,22 @@
 server:
   image:
     repository: temporalio/server
-    tag: 1.30.3
+    tag: 1.31.0
   # Replicas and resources for the Temporal server
   replicaCount: 1
 
-  # internal-frontend:
-  #   # Enable this to create internal-frontend
-  #   enabled: false
-  #   service:
-  #     # Evaluated as template
-  #     type: ClusterIP
-  #     port: 7236
-  #     appProtocol: tcp
-  #     membershipPort: 6936
-  #     membershipAppProtocol: tcp
-  #     httpPort: 7246
-  #     httpAppProtocol: http
+  internal-frontend:
+    # Enable this to create internal-frontend
+    enabled: true
+    service:
+      # Evaluated as template
+      type: ClusterIP
+      port: 7236
+      appProtocol: tcp
+      membershipPort: 6936
+      membershipAppProtocol: tcp
+      httpPort: 7246
+      httpAppProtocol: http
 
   archival:
     history:
@@ -144,8 +144,6 @@ server:
           name: aws-secret-rds-temporal
           key: dbname
   frontend:
-    # CRÍTICO: Frontend PRINCIPAL requiere autorización para usuarios
-    replicaCount: 1
     resources:
       requests:
         cpu: 500m
@@ -191,7 +189,7 @@ server:
 admintools:
   image:
     repository: temporalio/admin-tools
-    tag: 1.30.3
+    tag: 1.31.0
 
 shims:
   dockerize: false
