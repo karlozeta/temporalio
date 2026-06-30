@@ -1,120 +1,53 @@
-# Database configuration for Temporal using PostgreSQL as the persistence and visibility store.
-# For AWS EKS production: Configure IRSA role with S3 permissions, remove endpoint/credentials
-# For LocalStack development: Keep endpoint in s3store, use test credentials
-
-# serviceAccount:
-#   create: true
-#   name: temporal-sa
-  # For EKS with IRSA, add annotation pointing to the IAM role ARN:
-  # extraAnnotations:
-  #   eks.amazonaws.com/role-arn: "arn:aws:iam::ACCOUNT_ID:role/temporal-irsa-s3-role"
-
 server:
   image:
     repository: temporalio/server
-    tag: 1.31.0
+    tag: 1.30.3
+
   # Replicas and resources for the Temporal server
   replicaCount: 1
-
-  # internal-frontend:
-  #   # Enable this to create internal-frontend
-  #   enabled: true
-  #   service:
-  #     # Evaluated as template
-  #     type: ClusterIP
-  #     port: 7236
-  #     appProtocol: tcp
-  #     membershipPort: 6936
-  #     membershipAppProtocol: tcp
-  #     httpPort: 7246
-  #     httpAppProtocol: http
-
-  archival:
-    history:
-      state: "enabled"
-      enableRead: true
-      provider:
-        s3store:
-          region: "us-east-1"
-          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
-          s3ForcePathStyle: true
-    visibility:
-      state: "enabled"
-      enableRead: true
-      provider:
-        s3store:
-          region: "us-east-1"
-          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
-          s3ForcePathStyle: true
-
-  namespaceDefaults:
-    archival:
-      history:
-        state: "enabled"
-        URI: "s3://aws-archival"
-      visibility:
-        state: "enabled"
-        URI: "s3://aws-archival-visibility"
-
+  setConfigFilePath: true
+  configMapsToMount: "sprig"
   config:
-    metrics:
-      prometheus:
-        timerType: histogram
-        listenAddress: "0.0.0.0:9090"
     namespaces:
       create: true
       namespace:
         - name: approval-namespace
           retention: 30d
-        # - name: approval-namespace2
-        #   retention: 1h
-        # - name: default
-        #   retention: 1h
-    # authorization:
-    #   jwtKeyProvider:
-    #     keySourceURIs:
-    #       - "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/discovery/v2.0/keys"
-    #     refreshInterval: "30m"
-    #   permissionsClaimName: "roles"
-    #   authorizer: "default"
-    #   claimMapper: "default"
+        - name: approval-namespace2
+          retention: 1h
     persistence:
       defaultStore: default
-      visibilityStore: visibility
       numHistoryShards: 512
-      datastores:
-        default:
-          sql:
-            createDatabase: false
-            manageSchema: true
-            pluginName: postgres12_pgx
-            databaseName: tmprldcd
-            connectAddr: "192.168.49.1:54320"
-            connectProtocol: "tcp"
-            user: "cnxtmpld"
-            connectAttributes:
-              search_path: "tmpld"
-            existingSecret: aws-secret-rds-temporal
-            secretKey: password
-            maxConns: 5
-            maxIdleConns: 2
-            maxConnLifetime: "1h"
-        visibility:
-          sql:
-            createDatabase: false
-            manageSchema: true
-            pluginName: postgres12_pgx
-            databaseName: tmplvdcd
-            connectAddr: "192.168.49.1:54320"
-            connectProtocol: "tcp"
-            user: "cnxtmpld"
-            connectAttributes:
-              search_path: "tmplv"
-            existingSecret: aws-secret-rds-temporal
-            secretKey: password
-            maxConns: 5
-            maxIdleConns: 2
-            maxConnLifetime: "1h"
+      default:
+        driver: "sql"
+        sql:
+          driver: postgres12
+          host: "192.168.49.1"
+          port: 54320
+          database: tmprldcd
+          user: "cnxtmpld"
+          connectAttributes:
+            search_path: "tmpld"
+          existingSecret: aws-secret-rds-temporal
+          secretKey: password
+          maxConns: 5
+          maxIdleConns: 2
+          maxConnLifetime: "1h"
+      visibility:
+        driver: "sql"
+        sql:
+          driver: postgres12
+          host: "192.168.49.1"
+          port: 54320
+          database: tmplvdcd
+          user: "cnxtmpld"
+          connectAttributes:
+            search_path: "tmplv"
+          existingSecret: aws-secret-rds-temporal
+          secretKey: password
+          maxConns: 5
+          maxIdleConns: 2
+          maxConnLifetime: "1h"
   additionalEnvSecretName: "aws-secret-rds-temporal"
   additionalEnv:
     - name: AWS_ACCESS_KEY_ID
@@ -123,6 +56,8 @@ server:
       value: "test"
     - name: AWS_REGION
       value: "us-east-1"
+    - name: AWS_ENDPOINT_URL
+      value: "http://localstack.localstack.svc.cluster.local:4566"
     - name: SQL_HOST
       valueFrom:
         secretKeyRef:
@@ -143,12 +78,6 @@ server:
         secretKeyRef:
           name: aws-secret-rds-temporal
           key: dbname
-    - name: TEMPORAL_GRPC_META_AUTHORIZATION
-      value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNGU1MDQ1MjUtNDA5MS00OTVhLThkZTAtM2VlMTgxODdhYmFjL3YyLjAiLCJpYXQiOjE3ODE4MTM0NTQsIm5iZiI6MTc4MTgxMzQ1NCwiZXhwIjoxNzgxODE5MDc2LCJhaW8iOiJBZlFBQy84Y0FBQUFJQU8rUjZtWU1mNW5YemNyUXc4VE5BQVBpWWZRMlljYXpjeTNrS1JwNVAzRzFlWGVERmVhM2tlU08zRGUzR3VRSS9ySlVXbW9mOVkzVlpKaWtOSURpMGt1OTdQekRHZUVLQUdwbzczeGFFL1hUNDVoNG93VEVjTTRJbUQzVHhxVEViZUxVS1FhY3p5S04vZ1FvUk9CaWdhL3RJS2J1dlFVQzhXRzJNNnZ3dXVhRDBlVjJVc3dtTTdLRzJWdThGM0tvMUxZTTFaaURrMEl2dkJQTnRtVDdjWTRYYk41d3QzM1lFR3F1c3VJY1JhRjh6R01weTQ5WEkxenNLSFNwYS93Q0VEYzBMNlN4Q1Z4Y1dySUc5VUlkU0ZSZXpSMTEvQlM3QkdGbU5COVpMNVcwS2hDR01RTDFGOW9xWkg2cGNJcSIsImF6cCI6Ijc5YTc5MzAwLTQ5MDMtNDRhMC05MTU1LWRhNWRhYjRkMWY4NSIsImF6cGFjciI6IjEiLCJpZHAiOiJsaXZlLmNvbSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicHJlZmVycmVkX3VzZXJuYW1lIjoia2FybG96ZXRhQGhvdG1haWwuY29tIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJ0ZW1wb3JhbC1zeXN0ZW06YWRtaW4iLCJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtMTk0ZC00ODIxLTRiYjMtODgxOGE3NjFkYzgzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInV0aSI6ImhNRm9JNF93YTBPckUtNTBLOGtQQUEiLCJ2ZXIiOiIyLjAiLCJ4bXNfZnRkIjoiSHJIak85dXVhRDdJUHBtc1hsc0xWMzdFQlh5aGRQbmduMVhhQWhUTWNqQUJkWE51YjNKMGFDMWtjMjF6In0.Urlvj_iOmrPM-Spzrzh2Is_PE7W-bve_dSzhAT7o_X9yJm19ZRYijDZqrm1rj0r-DKYtZDmc4Q1yIfpMTSuwJRQMLpgensRVgBF0AU0vu_TSXjivh0v3c2yFePkrfKOUC2XSMXJzQ-NeWqAloSP3_wyOox0R-fSQ1Y6i-_f5QU4l8zwr5K-4MxTaVKCifbn5OMONBFo5d4hWzn0q3mjGoST7FK2dojDrWbb8V6Z35y7FguxVPQGJEUUuqorTCGJgKJ89V_bLAoRpnWbXH_N-xCJCjB8CSKFfNi7_H7RihtwQHRGeYslfCarah0--lKQUs2IpEoh27smlZfossqcF9Q"
-    # - name: INTERNAL_FRONTEND_GRPC_PORT
-    #   value: "7236"
-    # - name: INTERNAL_FRONTEND_MEMBERSHIP_PORT
-    #   value: "6936"
   frontend:
     resources:
       requests:
@@ -157,10 +86,6 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
-    additionalEnv:
-      - name: TEMPORAL_GRPC_META_AUTHORIZATION
-        value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNGU1MDQ1MjUtNDA5MS00OTVhLThkZTAtM2VlMTgxODdhYmFjL3YyLjAiLCJpYXQiOjE3ODE4MTM0NTQsIm5iZiI6MTc4MTgxMzQ1NCwiZXhwIjoxNzgxODE5MDc2LCJhaW8iOiJBZlFBQy84Y0FBQUFJQU8rUjZtWU1mNW5YemNyUXc4VE5BQVBpWWZRMlljYXpjeTNrS1JwNVAzRzFlWGVERmVhM2tlU08zRGUzR3VRSS9ySlVXbW9mOVkzVlpKaWtOSURpMGt1OTdQekRHZUVLQUdwbzczeGFFL1hUNDVoNG93VEVjTTRJbUQzVHhxVEViZUxVS1FhY3p5S04vZ1FvUk9CaWdhL3RJS2J1dlFVQzhXRzJNNnZ3dXVhRDBlVjJVc3dtTTdLRzJWdThGM0tvMUxZTTFaaURrMEl2dkJQTnRtVDdjWTRYYk41d3QzM1lFR3F1c3VJY1JhRjh6R01weTQ5WEkxenNLSFNwYS93Q0VEYzBMNlN4Q1Z4Y1dySUc5VUlkU0ZSZXpSMTEvQlM3QkdGbU5COVpMNVcwS2hDR01RTDFGOW9xWkg2cGNJcSIsImF6cCI6Ijc5YTc5MzAwLTQ5MDMtNDRhMC05MTU1LWRhNWRhYjRkMWY4NSIsImF6cGFjciI6IjEiLCJpZHAiOiJsaXZlLmNvbSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicHJlZmVycmVkX3VzZXJuYW1lIjoia2FybG96ZXRhQGhvdG1haWwuY29tIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJ0ZW1wb3JhbC1zeXN0ZW06YWRtaW4iLCJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtMTk0ZC00ODIxLTRiYjMtODgxOGE3NjFkYzgzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInV0aSI6ImhNRm9JNF93YTBPckUtNTBLOGtQQUEiLCJ2ZXIiOiIyLjAiLCJ4bXNfZnRkIjoiSHJIak85dXVhRDdJUHBtc1hsc0xWMzdFQlh5aGRQbmduMVhhQWhUTWNqQUJkWE51YjNKMGFDMWtjMjF6In0.Urlvj_iOmrPM-Spzrzh2Is_PE7W-bve_dSzhAT7o_X9yJm19ZRYijDZqrm1rj0r-DKYtZDmc4Q1yIfpMTSuwJRQMLpgensRVgBF0AU0vu_TSXjivh0v3c2yFePkrfKOUC2XSMXJzQ-NeWqAloSP3_wyOox0R-fSQ1Y6i-_f5QU4l8zwr5K-4MxTaVKCifbn5OMONBFo5d4hWzn0q3mjGoST7FK2dojDrWbb8V6Z35y7FguxVPQGJEUUuqorTCGJgKJ89V_bLAoRpnWbXH_N-xCJCjB8CSKFfNi7_H7RihtwQHRGeYslfCarah0--lKQUs2IpEoh27smlZfossqcF9Q"
-
   history:
     # Replicas and resources for the history service
     replicaCount: 1
@@ -171,10 +96,6 @@ server:
       limits:
         cpu: 2
         memory: 1G
-    additionalEnv:
-      - name: TEMPORAL_GRPC_META_AUTHORIZATION
-        value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNGU1MDQ1MjUtNDA5MS00OTVhLThkZTAtM2VlMTgxODdhYmFjL3YyLjAiLCJpYXQiOjE3ODE4MTM0NTQsIm5iZiI6MTc4MTgxMzQ1NCwiZXhwIjoxNzgxODE5MDc2LCJhaW8iOiJBZlFBQy84Y0FBQUFJQU8rUjZtWU1mNW5YemNyUXc4VE5BQVBpWWZRMlljYXpjeTNrS1JwNVAzRzFlWGVERmVhM2tlU08zRGUzR3VRSS9ySlVXbW9mOVkzVlpKaWtOSURpMGt1OTdQekRHZUVLQUdwbzczeGFFL1hUNDVoNG93VEVjTTRJbUQzVHhxVEViZUxVS1FhY3p5S04vZ1FvUk9CaWdhL3RJS2J1dlFVQzhXRzJNNnZ3dXVhRDBlVjJVc3dtTTdLRzJWdThGM0tvMUxZTTFaaURrMEl2dkJQTnRtVDdjWTRYYk41d3QzM1lFR3F1c3VJY1JhRjh6R01weTQ5WEkxenNLSFNwYS93Q0VEYzBMNlN4Q1Z4Y1dySUc5VUlkU0ZSZXpSMTEvQlM3QkdGbU5COVpMNVcwS2hDR01RTDFGOW9xWkg2cGNJcSIsImF6cCI6Ijc5YTc5MzAwLTQ5MDMtNDRhMC05MTU1LWRhNWRhYjRkMWY4NSIsImF6cGFjciI6IjEiLCJpZHAiOiJsaXZlLmNvbSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicHJlZmVycmVkX3VzZXJuYW1lIjoia2FybG96ZXRhQGhvdG1haWwuY29tIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJ0ZW1wb3JhbC1zeXN0ZW06YWRtaW4iLCJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtMTk0ZC00ODIxLTRiYjMtODgxOGE3NjFkYzgzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInV0aSI6ImhNRm9JNF93YTBPckUtNTBLOGtQQUEiLCJ2ZXIiOiIyLjAiLCJ4bXNfZnRkIjoiSHJIak85dXVhRDdJUHBtc1hsc0xWMzdFQlh5aGRQbmduMVhhQWhUTWNqQUJkWE51YjNKMGFDMWtjMjF6In0.Urlvj_iOmrPM-Spzrzh2Is_PE7W-bve_dSzhAT7o_X9yJm19ZRYijDZqrm1rj0r-DKYtZDmc4Q1yIfpMTSuwJRQMLpgensRVgBF0AU0vu_TSXjivh0v3c2yFePkrfKOUC2XSMXJzQ-NeWqAloSP3_wyOox0R-fSQ1Y6i-_f5QU4l8zwr5K-4MxTaVKCifbn5OMONBFo5d4hWzn0q3mjGoST7FK2dojDrWbb8V6Z35y7FguxVPQGJEUUuqorTCGJgKJ89V_bLAoRpnWbXH_N-xCJCjB8CSKFfNi7_H7RihtwQHRGeYslfCarah0--lKQUs2IpEoh27smlZfossqcF9Q"
-    
   matching:
     # Replicas and resources for the matching service
     replicaCount: 1
@@ -184,13 +105,8 @@ server:
         memory: 512Mi
       limits:
         cpu: 2
-        memory: 2Gi  
-    additionalEnv:
-      - name: TEMPORAL_GRPC_META_AUTHORIZATION
-        value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNGU1MDQ1MjUtNDA5MS00OTVhLThkZTAtM2VlMTgxODdhYmFjL3YyLjAiLCJpYXQiOjE3ODE4MTM0NTQsIm5iZiI6MTc4MTgxMzQ1NCwiZXhwIjoxNzgxODE5MDc2LCJhaW8iOiJBZlFBQy84Y0FBQUFJQU8rUjZtWU1mNW5YemNyUXc4VE5BQVBpWWZRMlljYXpjeTNrS1JwNVAzRzFlWGVERmVhM2tlU08zRGUzR3VRSS9ySlVXbW9mOVkzVlpKaWtOSURpMGt1OTdQekRHZUVLQUdwbzczeGFFL1hUNDVoNG93VEVjTTRJbUQzVHhxVEViZUxVS1FhY3p5S04vZ1FvUk9CaWdhL3RJS2J1dlFVQzhXRzJNNnZ3dXVhRDBlVjJVc3dtTTdLRzJWdThGM0tvMUxZTTFaaURrMEl2dkJQTnRtVDdjWTRYYk41d3QzM1lFR3F1c3VJY1JhRjh6R01weTQ5WEkxenNLSFNwYS93Q0VEYzBMNlN4Q1Z4Y1dySUc5VUlkU0ZSZXpSMTEvQlM3QkdGbU5COVpMNVcwS2hDR01RTDFGOW9xWkg2cGNJcSIsImF6cCI6Ijc5YTc5MzAwLTQ5MDMtNDRhMC05MTU1LWRhNWRhYjRkMWY4NSIsImF6cGFjciI6IjEiLCJpZHAiOiJsaXZlLmNvbSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicHJlZmVycmVkX3VzZXJuYW1lIjoia2FybG96ZXRhQGhvdG1haWwuY29tIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJ0ZW1wb3JhbC1zeXN0ZW06YWRtaW4iLCJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtMTk0ZC00ODIxLTRiYjMtODgxOGE3NjFkYzgzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInV0aSI6ImhNRm9JNF93YTBPckUtNTBLOGtQQUEiLCJ2ZXIiOiIyLjAiLCJ4bXNfZnRkIjoiSHJIak85dXVhRDdJUHBtc1hsc0xWMzdFQlh5aGRQbmduMVhhQWhUTWNqQUJkWE51YjNKMGFDMWtjMjF6In0.Urlvj_iOmrPM-Spzrzh2Is_PE7W-bve_dSzhAT7o_X9yJm19ZRYijDZqrm1rj0r-DKYtZDmc4Q1yIfpMTSuwJRQMLpgensRVgBF0AU0vu_TSXjivh0v3c2yFePkrfKOUC2XSMXJzQ-NeWqAloSP3_wyOox0R-fSQ1Y6i-_f5QU4l8zwr5K-4MxTaVKCifbn5OMONBFo5d4hWzn0q3mjGoST7FK2dojDrWbb8V6Z35y7FguxVPQGJEUUuqorTCGJgKJ89V_bLAoRpnWbXH_N-xCJCjB8CSKFfNi7_H7RihtwQHRGeYslfCarah0--lKQUs2IpEoh27smlZfossqcF9Q"
-
+        memory: 2Gi
   worker:
-    enabled: true
     # Replicas and resources for the worker service
     replicaCount: 1
     resources:
@@ -200,60 +116,52 @@ server:
       limits:
         cpu: 2
         memory: 2Gi
-    additionalEnv:
-      - name: TEMPORAL_GRPC_META_AUTHORIZATION
-        value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNGU1MDQ1MjUtNDA5MS00OTVhLThkZTAtM2VlMTgxODdhYmFjL3YyLjAiLCJpYXQiOjE3ODE4MTM0NTQsIm5iZiI6MTc4MTgxMzQ1NCwiZXhwIjoxNzgxODE5MDc2LCJhaW8iOiJBZlFBQy84Y0FBQUFJQU8rUjZtWU1mNW5YemNyUXc4VE5BQVBpWWZRMlljYXpjeTNrS1JwNVAzRzFlWGVERmVhM2tlU08zRGUzR3VRSS9ySlVXbW9mOVkzVlpKaWtOSURpMGt1OTdQekRHZUVLQUdwbzczeGFFL1hUNDVoNG93VEVjTTRJbUQzVHhxVEViZUxVS1FhY3p5S04vZ1FvUk9CaWdhL3RJS2J1dlFVQzhXRzJNNnZ3dXVhRDBlVjJVc3dtTTdLRzJWdThGM0tvMUxZTTFaaURrMEl2dkJQTnRtVDdjWTRYYk41d3QzM1lFR3F1c3VJY1JhRjh6R01weTQ5WEkxenNLSFNwYS93Q0VEYzBMNlN4Q1Z4Y1dySUc5VUlkU0ZSZXpSMTEvQlM3QkdGbU5COVpMNVcwS2hDR01RTDFGOW9xWkg2cGNJcSIsImF6cCI6Ijc5YTc5MzAwLTQ5MDMtNDRhMC05MTU1LWRhNWRhYjRkMWY4NSIsImF6cGFjciI6IjEiLCJpZHAiOiJsaXZlLmNvbSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicHJlZmVycmVkX3VzZXJuYW1lIjoia2FybG96ZXRhQGhvdG1haWwuY29tIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJ0ZW1wb3JhbC1zeXN0ZW06YWRtaW4iLCJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtMTk0ZC00ODIxLTRiYjMtODgxOGE3NjFkYzgzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInV0aSI6ImhNRm9JNF93YTBPckUtNTBLOGtQQUEiLCJ2ZXIiOiIyLjAiLCJ4bXNfZnRkIjoiSHJIak85dXVhRDdJUHBtc1hsc0xWMzdFQlh5aGRQbmduMVhhQWhUTWNqQUJkWE51YjNKMGFDMWtjMjF6In0.Urlvj_iOmrPM-Spzrzh2Is_PE7W-bve_dSzhAT7o_X9yJm19ZRYijDZqrm1rj0r-DKYtZDmc4Q1yIfpMTSuwJRQMLpgensRVgBF0AU0vu_TSXjivh0v3c2yFePkrfKOUC2XSMXJzQ-NeWqAloSP3_wyOox0R-fSQ1Y6i-_f5QU4l8zwr5K-4MxTaVKCifbn5OMONBFo5d4hWzn0q3mjGoST7FK2dojDrWbb8V6Z35y7FguxVPQGJEUUuqorTCGJgKJ89V_bLAoRpnWbXH_N-xCJCjB8CSKFfNi7_H7RihtwQHRGeYslfCarah0--lKQUs2IpEoh27smlZfossqcF9Q"
-
 ## Version temporal
 admintools:
   image:
     repository: temporalio/admin-tools
-    tag: 1.31.0
-  additionalEnv:
-    - name: TEMPORAL_GRPC_META_AUTHORIZATION
-      value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNGU1MDQ1MjUtNDA5MS00OTVhLThkZTAtM2VlMTgxODdhYmFjL3YyLjAiLCJpYXQiOjE3ODE4MTM0NTQsIm5iZiI6MTc4MTgxMzQ1NCwiZXhwIjoxNzgxODE5MDc2LCJhaW8iOiJBZlFBQy84Y0FBQUFJQU8rUjZtWU1mNW5YemNyUXc4VE5BQVBpWWZRMlljYXpjeTNrS1JwNVAzRzFlWGVERmVhM2tlU08zRGUzR3VRSS9ySlVXbW9mOVkzVlpKaWtOSURpMGt1OTdQekRHZUVLQUdwbzczeGFFL1hUNDVoNG93VEVjTTRJbUQzVHhxVEViZUxVS1FhY3p5S04vZ1FvUk9CaWdhL3RJS2J1dlFVQzhXRzJNNnZ3dXVhRDBlVjJVc3dtTTdLRzJWdThGM0tvMUxZTTFaaURrMEl2dkJQTnRtVDdjWTRYYk41d3QzM1lFR3F1c3VJY1JhRjh6R01weTQ5WEkxenNLSFNwYS93Q0VEYzBMNlN4Q1Z4Y1dySUc5VUlkU0ZSZXpSMTEvQlM3QkdGbU5COVpMNVcwS2hDR01RTDFGOW9xWkg2cGNJcSIsImF6cCI6Ijc5YTc5MzAwLTQ5MDMtNDRhMC05MTU1LWRhNWRhYjRkMWY4NSIsImF6cGFjciI6IjEiLCJpZHAiOiJsaXZlLmNvbSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicHJlZmVycmVkX3VzZXJuYW1lIjoia2FybG96ZXRhQGhvdG1haWwuY29tIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJ0ZW1wb3JhbC1zeXN0ZW06YWRtaW4iLCJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtMTk0ZC00ODIxLTRiYjMtODgxOGE3NjFkYzgzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInV0aSI6ImhNRm9JNF93YTBPckUtNTBLOGtQQUEiLCJ2ZXIiOiIyLjAiLCJ4bXNfZnRkIjoiSHJIak85dXVhRDdJUHBtc1hsc0xWMzdFQlh5aGRQbmduMVhhQWhUTWNqQUJkWE51YjNKMGFDMWtjMjF6In0.Urlvj_iOmrPM-Spzrzh2Is_PE7W-bve_dSzhAT7o_X9yJm19ZRYijDZqrm1rj0r-DKYtZDmc4Q1yIfpMTSuwJRQMLpgensRVgBF0AU0vu_TSXjivh0v3c2yFePkrfKOUC2XSMXJzQ-NeWqAloSP3_wyOox0R-fSQ1Y6i-_f5QU4l8zwr5K-4MxTaVKCifbn5OMONBFo5d4hWzn0q3mjGoST7FK2dojDrWbb8V6Z35y7FguxVPQGJEUUuqorTCGJgKJ89V_bLAoRpnWbXH_N-xCJCjB8CSKFfNi7_H7RihtwQHRGeYslfCarah0--lKQUs2IpEoh27smlZfossqcF9Q"
-
-shims:
-  dockerize: false
-  elasticsearchTool: false
-
+    tag: 1.30.3
 web:
   enabled: true
   image:
     repository: temporalio/ui
-    tag: 2.49.1
+    tag: 2.48.1
   replicaCount: 1
-  additionalEnv:
-    - name: TEMPORAL_NOTIFY_ON_NEW_VERSION
-      value: "true"
-    - name: TEMPORAL_AUTH_ENABLED
-      value: "true"
-    - name: TEMPORAL_AUTH_ISSUER_URL
-      value: "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/v2.0"
-    - name: TEMPORAL_AUTH_PROVIDER_URL
-      value: "https://login.microsoftonline.com/4e504525-4091-495a-8de0-3ee18187abac/v2.0"
-    - name: TEMPORAL_AUTH_CLIENT_ID
-      value: "79a79300-4903-44a0-9155-da5dab4d1f85"
-    - name: TEMPORAL_AUTH_CLIENT_SECRET
-      value: "Cmu8Q~9aOHqB55OJNNq6wOLHKkAAPZaACuoDPc6S"
-    - name: TEMPORAL_AUTH_CALLBACK_URL
-      value: "http://localhost:8080/auth/sso/callback"
-    - name: TEMPORAL_AUTH_SCOPES
-      value: "openid,profile,email,offline_access,api://79a79300-4903-44a0-9155-da5dab4d1f85/default"
-    - name: TEMPORAL_AUTH_TYPE
-      value: "oidc"
-    - name: TEMPORAL_GRPC_META_AUTHORIZATION
-      value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IndoMDZzRWt6TEhKNXNOTmFVeVJZMl82TzhLMCJ9.eyJhdWQiOiI3OWE3OTMwMC00OTAzLTQ0YTAtOTE1NS1kYTVkYWI0ZDFmODUiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNGU1MDQ1MjUtNDA5MS00OTVhLThkZTAtM2VlMTgxODdhYmFjL3YyLjAiLCJpYXQiOjE3ODE4MTM0NTQsIm5iZiI6MTc4MTgxMzQ1NCwiZXhwIjoxNzgxODE5MDc2LCJhaW8iOiJBZlFBQy84Y0FBQUFJQU8rUjZtWU1mNW5YemNyUXc4VE5BQVBpWWZRMlljYXpjeTNrS1JwNVAzRzFlWGVERmVhM2tlU08zRGUzR3VRSS9ySlVXbW9mOVkzVlpKaWtOSURpMGt1OTdQekRHZUVLQUdwbzczeGFFL1hUNDVoNG93VEVjTTRJbUQzVHhxVEViZUxVS1FhY3p5S04vZ1FvUk9CaWdhL3RJS2J1dlFVQzhXRzJNNnZ3dXVhRDBlVjJVc3dtTTdLRzJWdThGM0tvMUxZTTFaaURrMEl2dkJQTnRtVDdjWTRYYk41d3QzM1lFR3F1c3VJY1JhRjh6R01weTQ5WEkxenNLSFNwYS93Q0VEYzBMNlN4Q1Z4Y1dySUc5VUlkU0ZSZXpSMTEvQlM3QkdGbU5COVpMNVcwS2hDR01RTDFGOW9xWkg2cGNJcSIsImF6cCI6Ijc5YTc5MzAwLTQ5MDMtNDRhMC05MTU1LWRhNWRhYjRkMWY4NSIsImF6cGFjciI6IjEiLCJpZHAiOiJsaXZlLmNvbSIsIm5hbWUiOiJjYXJsb3MgZmVybmFuZG8gemFwYXRhIGdvbWV6Iiwib2lkIjoiZWQzNmJjYmMtNDFlNC00MDZlLWJhNTItOWI0MTRkMDgwNzBhIiwicHJlZmVycmVkX3VzZXJuYW1lIjoia2FybG96ZXRhQGhvdG1haWwuY29tIiwicmgiOiIxLkFXOEJKVVZRVHBGQVdrbU40RDdoZ1llcnJBQ1RwM2tEU2FCRWtWWGFYYXROSDRVQUFJNXZBUS4iLCJyb2xlcyI6WyJ0ZW1wb3JhbC1zeXN0ZW06YWRtaW4iLCJhcHByb3ZhbC1uYW1lc3BhY2U6cmVhZCJdLCJzY3AiOiJkZWZhdWx0Iiwic2lkIjoiMDA1ZTU0OGEtMTk0ZC00ODIxLTRiYjMtODgxOGE3NjFkYzgzIiwic3ViIjoiM2N2dzhIMy1MMkVvOE9GSzNTd2tuTVZ1UzZLUWdJSVZjQnJDV0o3cVVKUSIsInRpZCI6IjRlNTA0NTI1LTQwOTEtNDk1YS04ZGUwLTNlZTE4MTg3YWJhYyIsInV0aSI6ImhNRm9JNF93YTBPckUtNTBLOGtQQUEiLCJ2ZXIiOiIyLjAiLCJ4bXNfZnRkIjoiSHJIak85dXVhRDdJUHBtc1hsc0xWMzdFQlh5aGRQbmduMVhhQWhUTWNqQUJkWE51YjNKMGFDMWtjMjF6In0.Urlvj_iOmrPM-Spzrzh2Is_PE7W-bve_dSzhAT7o_X9yJm19ZRYijDZqrm1rj0r-DKYtZDmc4Q1yIfpMTSuwJRQMLpgensRVgBF0AU0vu_TSXjivh0v3c2yFePkrfKOUC2XSMXJzQ-NeWqAloSP3_wyOox0R-fSQ1Y6i-_f5QU4l8zwr5K-4MxTaVKCifbn5OMONBFo5d4hWzn0q3mjGoST7FK2dojDrWbb8V6Z35y7FguxVPQGJEUUuqorTCGJgKJ89V_bLAoRpnWbXH_N-xCJCjB8CSKFfNi7_H7RihtwQHRGeYslfCarah0--lKQUs2IpEoh27smlZfossqcF9Q"
-
-# Configuración para darle control a ArgoCD sobre el schema de la base de datos, para que lo ejecute antes del deploy del server
 schema:
-  useHelmHooks: true
-  ttlSecondsAfterFinished: 300
-  # jobAnnotations:
-  #   helm.sh/hook: pre-install,pre-upgrade
-  #   helm.sh/hook-weight: "0"
-  #   helm.sh/hook-delete-policy: before-hook-creation
-  # jobAnnotations:
-  #   argocd.argoproj.io/hook: PreSync
-  #   argocd.argoproj.io/sync-wave: "0"
-  #   argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+  createDatabase:
+    enabled: false
+  manageSchema: true
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+prometheus:
+  enabled: true
+grafana:
+  enabled: true
+elasticsearch:
+  enabled: false
+cassandra:
+  enabled: false
+
+server:
+  archival:
+    history:
+      state: "enabled"
+      enableRead: true
+      provider:
+        s3store:
+          region: "us-east-1"
+    visibility:
+      state: "enabled"
+      enableRead: true
+      provider:
+        s3store:
+          region: "us-east-1"
+
+  namespaceDefaults:
+    archival:
+      history:
+        state: "enabled"
+        URI: "s3://aws-archival"
+      visibility:
+        state: "enabled"
+        URI: "s3://aws-archival-visibility"
