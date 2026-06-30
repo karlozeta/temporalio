@@ -162,6 +162,6 @@ cassandra:
 #       history:
 #         state: "enabled"
 #         URI: "s3://aws-archival"
-#       visibility:
-        state: "enabled"
-        URI: "s3://aws-archival-visibility"
+# #       visibility:
+#         state: "enabled"
+#         URI: "s3://aws-archival-visibility"
