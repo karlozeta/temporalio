@@ -135,25 +135,24 @@ schema:
     sidecar.istio.io/inject: "false"
 prometheus:
   enabled: true
-  # serverFiles:
-  #   prometheus.yml:
-  #     scrape_configs:
-  #     - job_name: temporal-sdk-api
-  #       metrics_path: /actuator/prometheus
-  #       static_configs:
-  #         - targets:
-  #             - http://localhost:8082
-  #           labels:
-  #             mode: api
-  #             service: ms-orc-origination-api
-  #     - job_name: temporal-sdk-worker
-  #       metrics_path: /metrics
-  #       static_configs:
-  #         - targets:
-  #             - http://localhost:9464
-  #           labels:
-  #             mode: worker
-  #             service: ms-orc-origination-worker
+  server:
+    extraScrapeConfigs: |
+    - job_name: temporal-sdk-api
+      metrics_path: /actuator/prometheus
+      static_configs:
+        - targets:
+            - http://localhost:8082
+          labels:
+            mode: api
+            service: ms-orc-origination-api
+    - job_name: temporal-sdk-worker
+      metrics_path: /metrics
+      static_configs:
+        - targets:
+            - http://localhost:9464
+          labels:
+            mode: worker
+            service: ms-orc-origination-worker
 grafana:
   enabled: true
 elasticsearch:
