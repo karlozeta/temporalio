@@ -3,6 +3,33 @@ server:
     repository: temporalio/server
     tag: 1.30.3
 
+  archival:
+    history:
+      state: "enabled"
+      enableRead: true
+      provider:
+        s3store:
+          region: "us-east-1"
+          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
+          s3ForcePathStyle: true
+    visibility:
+      state: "enabled"
+      enableRead: true
+      provider:
+        s3store:
+          region: "us-east-1"
+          endpoint: "http://localstack.localstack.svc.cluster.local:4566"
+          s3ForcePathStyle: true
+
+  namespaceDefaults:
+    archival:
+      history:
+        state: "enabled"
+        URI: "s3://aws-archival"
+      visibility:
+        state: "enabled"
+        URI: "s3://aws-archival-visibility"
+
   # Replicas and resources for the Temporal server
   replicaCount: 1
   setConfigFilePath: true
