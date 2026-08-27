@@ -12,7 +12,7 @@
 server:
   image:
     repository: temporalio/server
-    tag: 1.31.0
+    tag: 1.31.2
   # Replicas and resources for the Temporal server
   replicaCount: 1
 
@@ -190,7 +190,7 @@ server:
 admintools:
   image:
     repository: temporalio/admin-tools
-    tag: 1.31.0
+    tag: 1.31.2
   additionalEnv:
     - name: AWS_ACCESS_KEY_ID
       value: "test"
@@ -207,7 +207,7 @@ web:
   enabled: true
   image:
     repository: temporalio/ui
-    tag: 2.49.1
+    tag: 2.52.0
   replicaCount: 1
   additionalEnv:
     - name: TEMPORAL_NOTIFY_ON_NEW_VERSION
