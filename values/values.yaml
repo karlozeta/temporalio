@@ -144,6 +144,8 @@ server:
           name: aws-secret-rds-temporal
           key: dbname
   frontend:
+    service:
+      type: LoadBalancer
     resources:
       requests:
         cpu: 500m
