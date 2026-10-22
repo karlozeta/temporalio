@@ -146,6 +146,12 @@ server:
   frontend:
     service:
       type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: "external"
+        service.beta.kubernetes.io/aws-load-balancer-scheme: "internal"
+        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "TCP"
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "traffic-port"
     resources:
       requests:
         cpu: 500m
